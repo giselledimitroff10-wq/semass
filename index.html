@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preparador Clínico SEMAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --teal:#1A7A7A; --teal-dark:#0D5252; --teal-mid:#2A9A9A;
+  --teal-light:#E6F4F4; --teal-glow:rgba(26,122,122,0.12);
+  --cream:#F7F4EF; --warm:#FDFCFA;
+  --text:#1C1C2E; --text-mid:#3A3A52; --text-soft:#7A7A96;
+  --amber:#C07A20; --amber-light:#FFF4E0;
+  --red-soft:#E85555; --green-soft:#2A8A5A;
+  --serif:'Fraunces',serif; --sans:'DM Sans',sans-serif;
+}
+html,body { min-height:100vh; background:var(--cream); font-family:var(--sans); color:var(--text); }
+
+/* HEADER */
+header { background:var(--teal-dark); padding:0 32px; height:62px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 20px rgba(0,0,0,0.25); }
+.logo { font-family:var(--serif); font-size:21px; color:white; letter-spacing:.05em; }
+.logo span { color:var(--teal-mid); }
+.hbadge { font-size:11px; font-weight:600; letter-spacing:.15em; color:rgba(255,255,255,.45); text-transform:uppercase; }
+
+/* LAYOUT */
+.app { max-width:900px; margin:0 auto; padding:44px 24px 80px; }
+
+/* INTRO */
+.itag { font-size:11px; font-weight:600; letter-spacing:.2em; color:var(--teal); text-transform:uppercase; margin-bottom:10px; }
+h1 { font-family:var(--serif); font-size:clamp(26px,4vw,40px); font-weight:400; line-height:1.2; margin-bottom:10px; }
+h1 em { font-style:italic; color:var(--teal); }
+.intro-p { font-size:15px; color:var(--text-mid); line-height:1.7; max-width:580px; font-weight:300; margin-bottom:28px; }
+
+/* DISCLAIMER */
+.disc { background:var(--amber-light); border-left:3px solid var(--amber); border-radius:0 10px 10px 0; padding:13px 17px; margin-bottom:28px; font-size:13px; color:var(--text-mid); line-height:1.6; }
+.disc strong { color:var(--amber); }
+
+/* INPUT PANEL */
+.panel { background:var(--warm); border:1px solid rgba(26,122,122,.15); border-radius:20px; padding:30px; margin-bottom:20px; box-shadow:0 4px 28px var(--teal-glow); }
+.ptitle { font-family:var(--serif); font-size:21px; font-weight:400; margin-bottom:5px; }
+.psub { font-size:13px; color:var(--text-soft); margin-bottom:16px; font-weight:300; }
+textarea { width:100%; min-height:210px; padding:16px; border:1.5px solid rgba(26,122,122,.2); border-radius:12px; background:var(--cream); font-family:var(--sans); font-size:14px; color:var(--text); line-height:1.7; resize:vertical; outline:none; transition:border-color .2s,box-shadow .2s; }
+textarea:focus { border-color:var(--teal); box-shadow:0 0 0 3px var(--teal-glow); }
+textarea::placeholder { color:var(--text-soft); }
+.cc { text-align:right; font-size:12px; color:var(--text-soft); margin-top:7px; }
+.btn-main { width:100%; margin-top:16px; padding:16px 24px; background:var(--teal); color:white; border:none; border-radius:12px; font-family:var(--sans); font-size:15px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:all .2s; letter-spacing:.02em; }
+.btn-main:hover:not(:disabled) { background:var(--teal-dark); transform:translateY(-1px); box-shadow:0 8px 28px rgba(26,122,122,.28); }
+.btn-main:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+/* LOADING */
+.loading { display:none; text-align:center; padding:52px 24px; }
+.loading.on { display:block; }
+.dots { display:flex; justify-content:center; gap:9px; margin-bottom:22px; }
+.dot { width:11px; height:11px; border-radius:50%; background:var(--teal); animation:bounce 1.2s ease infinite; }
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(.68);opacity:.45}40%{transform:scale(1);opacity:1}}
+.ltxt { font-family:var(--serif); font-size:19px; font-style:italic; color:var(--text-mid); }
+.lsub { font-size:13px; color:var(--text-soft); margin-top:8px; }
+.sbox { background:var(--teal-light); border-radius:12px; padding:14px 18px; margin-top:18px; font-size:13px; color:var(--text-mid); line-height:1.6; max-height:90px; overflow:hidden; position:relative; }
+.sbox::after { content:''; position:absolute; bottom:0;left:0;right:0;height:34px; background:linear-gradient(transparent,var(--teal-light)); }
+.cur { display:inline-block; width:2px; height:13px; background:var(--teal); animation:bl .8s infinite; vertical-align:middle; margin-left:2px; }
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ERROR */
+.ebox { display:none; background:rgba(232,85,85,.08); border:1px solid rgba(232,85,85,.28); border-radius:12px; padding:18px; margin-top:14px; font-size:14px; color:#b03030; line-height:1.65; }
+.ebox.on { display:block; }
+
+/* RESULTS */
+.results { display:none; }
+.results.on { display:block; animation:fi .45s ease; }
+@keyframes fi{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTION CARDS */
+.rsec { background:var(--warm); border:1px solid rgba(26,122,122,.12); border-radius:18px; margin-bottom:14px; overflow:hidden; box-shadow:0 2px 14px rgba(26,122,122,.06); }
+.rh { display:flex; align-items:center; gap:14px; padding:19px 23px; cursor:pointer; user-select:none; transition:background .18s; }
+.rh:hover { background:var(--teal-light); }
+.rnum { width:33px; height:33px; border-radius:50%; background:var(--teal); color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.rnum.g { background:var(--green-soft); }
+.rnum.a { background:var(--amber); }
+.rnum.r { background:var(--red-soft); }
+.rtw { flex:1; }
+.rl { font-size:11px; font-weight:600; letter-spacing:.15em; color:var(--text-soft); text-transform:uppercase; margin-bottom:2px; }
+.rname { font-family:var(--serif); font-size:17px; color:var(--text); }
+.chv { color:var(--text-soft); font-size:19px; transition:transform .3s; }
+.rsec.open .chv { transform:rotate(180deg); }
+.rb { display:none; padding:0 23px 23px; border-top:1px solid rgba(26,122,122,.08); }
+.rsec.open .rb { display:block; }
+.rbi { padding-top:18px; font-size:14px; color:var(--text-mid); line-height:1.78; }
+.rbi h4 { font-family:var(--serif); font-size:15px; color:var(--teal); margin:14px 0 6px; font-weight:400; font-style:italic; }
+.rbi ul { list-style:none; margin:8px 0; }
+.rbi ul li { margin-bottom:8px; }
+.rbi p { margin-bottom:9px; }
+.rbi strong { color:var(--teal-dark); font-weight:600; }
+
+/* Item styles */
+.iok  { background:rgba(42,138,90,.09); border-left:3px solid var(--green-soft); border-radius:0 8px 8px 0; padding:10px 14px; font-size:13.5px; line-height:1.6; }
+.iwrn { background:var(--amber-light); border-left:3px solid var(--amber); border-radius:0 8px 8px 0; padding:10px 14px; font-size:13.5px; line-height:1.6; }
+.iq   { background:var(--teal-light); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:10px 14px; font-size:13.5px; font-style:italic; line-height:1.6; }
+.ialr { background:rgba(232,85,85,.09); border-left:3px solid var(--red-soft); border-radius:0 8px 8px 0; padding:10px 14px; font-size:13.5px; line-height:1.6; }
+
+/* ACTIONS */
+.acts { display:flex; gap:12px; margin-top:22px; flex-wrap:wrap; }
+.bsec { padding:12px 19px; border:1.5px solid var(--teal); background:transparent; color:var(--teal); border-radius:10px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all .2s; }
+.bsec:hover { background:var(--teal); color:white; }
+.bpri { padding:12px 19px; border:none; background:var(--teal); color:white; border-radius:10px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all .2s; }
+.bpri:hover { background:var(--teal-dark); }
+
+/* FOOTER */
+.foot { text-align:center; margin-top:52px; font-size:12px; color:var(--text-soft); }
+.foot strong { color:var(--teal); }
+
+/* PRINT */
+@media print {
+  header,.panel,.acts,.foot,.loading,.ebox{display:none!important}
+  .results{display:block!important}
+  .rsec{break-inside:avoid;box-shadow:none;border:1px solid #ccc;margin-bottom:18px}
+  .rb{display:block!important}
+  .chv,.rh{cursor:default}
+  .rh:hover{background:none}
+  body{background:white;font-size:12px}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">SEMAS <span>Clínica</span></div>
+  <div class="hbadge">Preparador Clínico · Uso interno</div>
+</header>
+
+<div class="app">
+
+  <!-- INTRO -->
+  <div class="itag">Herramienta de supervisión</div>
+  <h1>Preparador Clínico <em>SEMAS</em></h1>
+  <p class="intro-p">Describí el caso que querés llevar a supervisión. El preparador te ayuda a organizar la información, identificar lo que falta y formular las preguntas clínicas clave — antes de llegar al espacio grupal.</p>
+
+  <!-- DISCLAIMER -->
+  <div class="disc">
+    <strong>Recordá:</strong> Esta herramienta actúa como supervisor/a clínico/a de apoyo.
+    <strong>No realiza diagnósticos ni indica tratamientos cerrados.</strong>
+    Toda decisión clínica es tuya y de tu supervisor/a.
+  </div>
+
+  <!-- PANEL -->
+  <div class="panel">
+    <div class="ptitle">Describí el caso</div>
+    <div class="psub" id="psub">Escribí con tus propias palabras. No hay formato obligatorio — incluí lo que sabés, lo que te genera duda y cómo te sentís con el caso.</div>
+    <textarea id="ci" maxlength="4000" oninput="uc()"
+      placeholder="Ejemplo: Paciente de 34 años, sexo femenino, consulta por ansiedad. Hace 6 meses tuvo un episodio de pánico en el trabajo y desde entonces evita situaciones donde siente que puede quedar expuesta. Tiene historia de madre muy crítica. En sesión es muy intelectual, le cuesta conectar con las emociones. Estoy usando reestructuración cognitiva pero siento que no llega al fondo..."></textarea>
+    <div class="cc"><span id="cn">0</span> / 4000</div>
+    <button class="btn-main" id="ab" onclick="run()">
+      🔍 Preparar para supervisión
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="ld">
+    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="ltxt">Analizando el caso...</div>
+    <div class="lsub">Esto puede tardar unos segundos</div>
+    <div class="sbox"><span id="st">Conectando con el supervisor clínico...</span><span class="cur"></span></div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="ebox" id="eb"></div>
+
+  <!-- RESULTS -->
+  <div class="results" id="res">
+    <div id="sc"></div>
+    <div class="acts">
+      <button class="bsec" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+      <button class="bsec" onclick="rst()">↩ Analizar otro caso</button>
+      <button class="bpri" id="cpb" onclick="cpy()">📋 Copiar análisis</button>
+    </div>
+  </div>
+
+  <div class="foot"><strong>SEMAS Clínica</strong> · Preparador Clínico · Solo para uso interno de miembros</div>
+</div>
+
+<script>
+// ── SECCIÓN CONFIG ─────────────────────────────────────────────────────────
+const SDEFS = [
+  { k:'[S1]', label:'Lo que está claro',       name:'Información clínica relevante y clara',   col:'g' },
+  { k:'[S2]', label:'Lo que falta explorar',   name:'Información ausente o insuficiente',       col:'a' },
+  { k:'[S3]', label:'Hipótesis provisionales', name:'Posibles ejes de formulación clínica',     col:''  },
+  { k:'[S4]', label:'Para la supervisión',     name:'Preguntas clínicas clave que llevar',      col:''  },
+  { k:'[S5]', label:'Puntos ciegos',           name:'Errores frecuentes o sesgos posibles',     col:'r' },
+];
+const ICLS = { g:'iok', a:'iwrn', r:'ialr', '':'iq' };
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let last = null;
+const $ = id => document.getElementById(id);
+
+// ── UI ─────────────────────────────────────────────────────────────────────
+function uc() { $('cn').textContent = $('ci').value.length; }
+
+function setL(on) {
+  $('ld').classList.toggle('on', on);
+  $('ab').disabled = on;
+  if (on) {
+    $('eb').classList.remove('on');
+    $('res').classList.remove('on');
+  }
+}
+
+function showErr(m) {
+  $('eb').textContent = m;
+  $('eb').classList.add('on');
+  setL(false);
+}
+
+function rst() {
+  last = null;
+  $('ci').value = '';
+  $('cn').textContent = '0';
+  $('res').classList.remove('on');
+  $('sc').innerHTML = '';
+  $('eb').classList.remove('on');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function tog(el) { el.closest('.rsec').classList.toggle('open'); }
+
+// ── PARSE ──────────────────────────────────────────────────────────────────
+function parse(raw) {
+  return SDEFS.map((d, i) => {
+    const et = i < SDEFS.length - 1 ? SDEFS[i+1].k : '[END]';
+    const si = raw.indexOf(d.k);
+    const ei = raw.indexOf(et);
+    const content = si === -1 ? ''
+      : (ei !== -1 ? raw.slice(si + d.k.length, ei) : raw.slice(si + d.k.length)).trim();
+    return { ...d, content };
+  }).filter(s => s.content.length > 10);
+}
+
+// ── FORMAT ─────────────────────────────────────────────────────────────────
+function fmt(t) {
+  return t
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/_(.+?)_/g, '<em>$1</em>');
+}
+
+function renderC(text, col) {
+  const cls = ICLS[col] || 'iq';
+  let h = '', inL = false;
+  for (let line of text.split('\n')) {
+    line = line.trim();
+    if (!line) { if (inL) { h += '</ul>'; inL = false; } continue; }
+    if (line.startsWith('## ')) {
+      if (inL) { h += '</ul>'; inL = false; }
+      h += `<h4>${fmt(line.slice(3))}</h4>`; continue;
+    }
+    if (line.match(/^[-•]\s/) || line.match(/^\d+\.\s/)) {
+      if (!inL) { h += '<ul>'; inL = true; }
+      const c = line.replace(/^[-•]\s|^\d+\.\s/, '');
+      h += `<li><div class="${cls}">${fmt(c)}</div></li>`; continue;
+    }
+    if (inL) { h += '</ul>'; inL = false; }
+    h += `<p>${fmt(line)}</p>`;
+  }
+  if (inL) h += '</ul>';
+  return h;
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function renderSecs(secs) {
+  const c = $('sc'); c.innerHTML = '';
+  secs.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'rsec open';
+    d.style.animationDelay = `${i * 70}ms`;
+    d.innerHTML = `
+      <div class="rh" onclick="tog(this)">
+        <div class="rnum ${s.col}">${i+1}</div>
+        <div class="rtw">
+          <div class="rl">${s.label}</div>
+          <div class="rname">${s.name}</div>
+        </div>
+        <div class="chv">&#8964;</div>
+      </div>
+      <div class="rb"><div class="rbi">${renderC(s.content, s.col)}</div></div>`;
+    c.appendChild(d);
+  });
+}
+
+// ── COPY ───────────────────────────────────────────────────────────────────
+function cpy() {
+  if (!last) return;
+  const t = 'PREPARADOR CLÍNICO SEMAS\n========================\n\n'
+    + last.map((s,i) => `${i+1}. ${s.name.toUpperCase()}\n${s.content}`).join('\n\n');
+  navigator.clipboard.writeText(t).then(() => {
+    const b = $('cpb'); b.innerHTML = '✓ Copiado';
+    setTimeout(() => b.innerHTML = '📋 Copiar análisis', 2000);
+  });
+}
+
+// ── MAIN ───────────────────────────────────────────────────────────────────
+async function run() {
+  const input = $('ci').value.trim();
+  if (input.length < 80) {
+    showErr('Por favor describí el caso con más detalle (mínimo 80 caracteres) para que el análisis sea útil.');
+    return;
+  }
+
+  setL(true);
+  $('ld').scrollIntoView({ behavior:'smooth', block:'center' });
+
+  try {
+    // Llamada al BACKEND PROPIO en /api/analyze — sin CORS, sin API key expuesta
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caseText: input })
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || `Error del servidor (${res.status})`);
+    }
+
+    const data = await res.json();
+    const raw  = data.result || '';
+
+    const secs = parse(raw);
+    last = secs.length > 0 ? secs
+      : [{ k:'', label:'Análisis', name:'Respuesta completa', col:'', content: raw }];
+
+    setL(false);
+    renderSecs(last);
+    $('res').classList.add('on');
+    setTimeout(() => $('res').scrollIntoView({ behavior:'smooth', block:'start' }), 150);
+
+  } catch(err) {
+    showErr(`Error: ${err.message}. Verificá tu conexión e intentá de nuevo.`);
+  }
+}
+
+// ── SHORTCUTS ──────────────────────────────────────────────────────────────
+$('ci').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+});
+$('ci').addEventListener('focus', function() {
+  if (!this._h) {
+    this._h = true;
+    $('psub').textContent = 'Escribí con tus propias palabras. Usá Ctrl+Enter (Cmd+Enter en Mac) para analizar rápidamente.';
+  }
+});
+</script>
+</body>
+</html>
