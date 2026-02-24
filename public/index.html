@@ -122,9 +122,64 @@ textarea::placeholder { color:var(--text-soft); }
   body{background:white;font-size:12px}
   h1{font-size:22px}
 }
+
+/* ── LOGIN ────────────────────────────────────────────────────────────────── */
+.login-overlay {
+  position:fixed; inset:0; background:var(--teal-dark);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999; padding:24px;
+}
+.login-box {
+  background:var(--warm); border-radius:20px; padding:40px 36px;
+  max-width:400px; width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  text-align:center;
+}
+.login-logo { font-family:var(--serif); font-size:26px; color:var(--teal-dark); margin-bottom:4px; }
+.login-logo span { color:var(--teal-mid); }
+.login-sub { font-size:13px; color:var(--text-soft); margin-bottom:28px; font-weight:300; }
+.login-label { font-size:12px; font-weight:600; color:var(--text-mid); text-align:left; display:block; margin-bottom:6px; letter-spacing:0.05em; }
+.login-input {
+  width:100%; padding:13px 16px; border:1.5px solid rgba(26,122,122,.25);
+  border-radius:10px; background:var(--cream); font-family:var(--sans);
+  font-size:15px; color:var(--text); outline:none;
+  transition:border-color .2s, box-shadow .2s;
+  text-align:center; letter-spacing:0.1em;
+}
+.login-input:focus { border-color:var(--teal); box-shadow:0 0 0 3px var(--teal-glow); }
+.login-btn {
+  width:100%; margin-top:16px; padding:14px; background:var(--teal);
+  color:white; border:none; border-radius:10px; font-family:var(--sans);
+  font-size:15px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.login-btn:hover { background:var(--teal-dark); transform:translateY(-1px); }
+.login-error {
+  display:none; margin-top:12px; padding:10px 14px;
+  background:rgba(232,85,85,.1); border:1px solid rgba(232,85,85,.3);
+  border-radius:8px; font-size:13px; color:#b03030;
+}
+.login-error.on { display:block; }
+.login-footer { margin-top:20px; font-size:11px; color:var(--text-soft); }
+
 </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">SEMAS <span>Clínica</span></div>
+    <div class="login-sub">Preparador Clínico · Uso interno de miembros</div>
+    <label class="login-label" for="pwInput">Clave de acceso</label>
+    <input class="login-input" type="password" id="pwInput"
+      placeholder="••••••••••••••"
+      onkeydown="if(event.key==='Enter') checkPw()" autocomplete="off" />
+    <button class="login-btn" onclick="checkPw()">Ingresar</button>
+    <div class="login-error" id="loginError">Clave incorrecta. Verificá con SEMAS.</div>
+    <div class="login-footer">¿No tenés acceso? Escribinos a semasposgrados@gmail.com</div>
+  </div>
+</div>
+
 
 <header>
   <div class="logo">SEMAS <span>Clínica</span></div>
@@ -350,6 +405,38 @@ $('ci').addEventListener('focus', function() {
     $('psub').textContent = 'Escribí con tus propias palabras. Usá Ctrl+Enter (Cmd+Enter en Mac) para analizar rápidamente.';
   }
 });
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+(function() {
+  // Si ya ingresó en esta sesión, ocultar overlay
+  if (sessionStorage.getItem('semas_auth') === '1') {
+    document.getElementById('loginOverlay').style.display = 'none';
+  }
+  // Focus automático
+  window.addEventListener('load', function() {
+    const overlay = document.getElementById('loginOverlay');
+    if (overlay && overlay.style.display !== 'none') {
+      document.getElementById('pwInput').focus();
+    }
+  });
+})();
+
+function checkPw() {
+  const val = document.getElementById('pwInput').value;
+  const err = document.getElementById('loginError');
+  // Hash simple para no exponer la clave en texto plano
+  const hash = btoa(val.trim());
+  if (hash === 'Y2FsZWlkb3Njb3BpbzI2') {
+    sessionStorage.setItem('semas_auth', '1');
+    document.getElementById('loginOverlay').style.display = 'none';
+  } else {
+    err.classList.add('on');
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+    setTimeout(() => err.classList.remove('on'), 3000);
+  }
+}
+
 </script>
 </body>
 </html>
